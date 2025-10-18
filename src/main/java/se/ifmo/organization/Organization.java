@@ -1,5 +1,6 @@
 package se.ifmo.organization;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import se.ifmo.model.OrganizationType;
 @Setter
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Schema(hidden = true)
 public class Organization implements AbstractEntity<Integer> {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

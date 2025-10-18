@@ -1,5 +1,6 @@
 package se.ifmo.product;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import java.util.Date;
 @Setter
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Schema(hidden = true)
 public class Product implements AbstractEntity<Integer> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

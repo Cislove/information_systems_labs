@@ -1,5 +1,6 @@
 package se.ifmo.address;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import se.ifmo.location.Location;
 @Setter
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Schema(hidden = true)
 public class Address implements AbstractEntity<Integer> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

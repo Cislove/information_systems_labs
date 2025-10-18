@@ -1,5 +1,7 @@
 package se.ifmo.coordinates;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +15,8 @@ import se.ifmo.common.AbstractEntity;
 @Setter
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Schema(hidden = true)
+@Hidden
 public class Coordinates implements AbstractEntity<Integer> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
