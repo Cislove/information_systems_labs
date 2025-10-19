@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import se.ifmo.model.UnitOfMeasure;
 import se.ifmo.operations.dto.PriceReduceDto;
 import se.ifmo.product.Product;
+import se.ifmo.product.ProductDto;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class ProductOperationsController {
     }
 
     @GetMapping("/unitOfMeasure/productWhereUnitOfMeasureIsSet")
-    public List<Product> getUnitOfMeasureProductWhereUnitOfMeasureIsSet(
+    public List<ProductDto> getUnitOfMeasureProductWhereUnitOfMeasureIsSet(
             @RequestBody List<UnitOfMeasure> unitOfMeasures) {
 
         return productOperationsService.filterByUnitOfMeasure(unitOfMeasures);

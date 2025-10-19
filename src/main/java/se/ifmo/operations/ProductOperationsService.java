@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import se.ifmo.model.UnitOfMeasure;
 import se.ifmo.notification.NotificationService;
 import se.ifmo.product.Product;
+import se.ifmo.product.ProductDto;
+import se.ifmo.product.ProductMapper;
 import se.ifmo.product.ProductRepository;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 public class ProductOperationsService {
     private final ProductRepository productRepository;
     private final NotificationService notificationService;
+    private final ProductMapper productMapper;
 
     @Transactional
     public void priceReduce(double percent){
@@ -47,10 +50,11 @@ public class ProductOperationsService {
                 );
     }
 
-    public List<Product> filterByUnitOfMeasure(List<UnitOfMeasure> unitOfMeasures){
+    public List<ProductDto> filterByUnitOfMeasure(List<UnitOfMeasure> unitOfMeasures){
         return productRepository.findAll()
                 .stream()
                 .filter(product -> unitOfMeasures.contains(product.getUnitOfMeasure()))
+                .map(productMapper::toDto)
                 .toList();
     }
 }

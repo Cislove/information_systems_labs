@@ -59,6 +59,7 @@ public abstract class AbstractCrudService<
     public TId create(TDto dto) {
         try {
             TEntity entity = mapper.toEntity(dto);
+            entity.setId(null);
             entity = repository.save(entity);
             notificationService.sendAddNotification(
                     entity.getStringId(),
