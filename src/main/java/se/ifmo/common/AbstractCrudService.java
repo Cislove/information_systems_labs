@@ -1,5 +1,7 @@
 package se.ifmo.common;
 
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
@@ -14,6 +16,7 @@ import se.ifmo.errors.NotFoundException;
 import se.ifmo.errors.SearchException;
 import se.ifmo.notification.NotificationService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,12 +42,11 @@ public abstract class AbstractCrudService<
         return mapper.toDto(dto);
     }
 
-    public Page<TDto> searchByValueInField(String field, String value, Pageable pageable) {
-        validateSearchFields(field);
+    public Page<TDto> searchByValueInField(Map<String, String> fieldAndValue, Pageable pageable) {
+        validateSearchFields(fieldAndValue.keySet().stream().toList());
+        convertSearchFields(fieldAndValue);
         try{
-            String mappingField = getFieldMapping().get(field);
-            Specification<TEntity> spec = createEqualsSpecification(mappingField, value);
-
+            Specification<TEntity> spec = createEqualsSpecification(fieldAndValue);
             return repository.findAll(spec, pageable).map(mapper::toDto);
         }
         catch (ConstraintViolationException ex){
@@ -100,25 +102,73 @@ public abstract class AbstractCrudService<
         }
     }
 
-    private void validateSearchFields(String field) {
-        if (!(getFieldMapping().containsKey(field) &&
-                getAllowedSearchFields().contains(getFieldMapping().get(field)))) {
-            throw new IllegalArgumentException("Invalid search field: " + field);
+    private void validateSearchFields(List <String> fields) {
+        for (String field : fields) {
+            if (!(getFieldMapping().containsKey(field) &&
+                    getAllowedSearchFields().contains(getFieldMapping().get(field)))) {
+                throw new IllegalArgumentException("Invalid search field: " + field);
+            }
         }
     }
 
-    private Specification<TEntity> createEqualsSpecification(String field, String value) {
+    private void convertSearchFields(Map <String, String> fieldAndValue) {
+        var keySet = Set.copyOf(fieldAndValue.keySet());
+        for (String field : keySet) {
+            if (getFieldMapping().containsKey(field)) {
+                String mappedField = getFieldMapping().get(field);
+                String value = fieldAndValue.remove(field);
+                fieldAndValue.put(mappedField, value);
+            }
+        }
+    }
+
+    private Specification<TEntity> createEqualsSpecification(Map <String, String> fieldAndValue) {
         return (root, _, criteriaBuilder) -> {
-            if (value == null || value.trim().isEmpty()) {
+            if (fieldAndValue == null || fieldAndValue.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
 
-            try {
-                return criteriaBuilder.equal(root.get(field), value);
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Field '" + field + "' not found"); //ошибка настройки
+            List<Predicate> predicates = new ArrayList<>();
+
+            for (Map.Entry<String, String> entry : fieldAndValue.entrySet()) {
+                String field = entry.getKey();
+                String value = entry.getValue();
+
+                try {
+                    Path<?> path = root;
+                    for (String part : field.split("\\.")) {
+                        path = path.get(part);
+                    }
+
+                    Object typedValue = convertValue(value, path.getJavaType());
+
+                    predicates.add(criteriaBuilder.equal(path, typedValue));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Field '" + field + "' not found");
+                }
             }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private Object convertValue(Object value, Class<?> targetType) {
+        if (value == null) return null;
+
+        if (targetType.equals(Long.class)) {
+            return Long.parseLong(value.toString());
+        } else if (targetType.equals(Integer.class)) {
+            return Integer.parseInt(value.toString());
+        } else if (targetType.equals(Double.class)) {
+            return Double.parseDouble(value.toString());
+        } else if (targetType.equals(Boolean.class)) {
+            return Boolean.parseBoolean(value.toString());
+        }
+
+        return value.toString();
+    }
+
+    protected Map<String, String> getAllowedSearchFieldsWithLabels(){
+        return Map.of();
     }
 
     protected Set<String> getAllowedSearchFields(){

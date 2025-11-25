@@ -5,10 +5,10 @@ spring:
     username: myuser
     password: mypassword
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     hibernate:
       ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:
         cache:
@@ -29,3 +29,19 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+springdoc:
+  operation-id-template: "{className}_{methodName}"
+  api-docs:
+    enabled: true
+    resolve-schema-properties: true
+  swagger-ui:
+    operations-sorter: method
+  writer-with-default-pretty-printer: true
+  override-with-generic-response: false
+  default-flat-param-object: true
+  cache:
+    disabled: true
+  group-configs:
+    - group: default
+      paths-to-match: /**
+  paths-to-match: /**

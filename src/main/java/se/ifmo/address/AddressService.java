@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import se.ifmo.common.AbstractCrudService;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,12 +27,22 @@ public class AddressService extends AbstractCrudService<
     }
 
     @Override
+    protected Map<String, String> getAllowedSearchFieldsWithLabels() {
+        return Map.of(
+                "street", "улица",
+                "zipCode", "почтовый индекс");
+    }
+
+    @Override
     protected Set<String> getAllowedSearchFields() {
-        return Set.of("street", "zipCode");
+        return Set.of("street", "zipCode", "town");
     }
 
     @Override
     protected Map<String, String> getFieldMapping() {
-        return Map.of("street", "street", "zipCode", "zipCode");
+        return Map.of(
+                "street", "street",
+                "zipCode", "zipCode",
+                "town", "town.id");
     }
 }

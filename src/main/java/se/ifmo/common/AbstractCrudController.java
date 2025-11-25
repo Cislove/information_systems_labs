@@ -10,10 +10,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import se.ifmo.common.placemark.Dto;
+
+import java.util.List;
+import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ public abstract class AbstractCrudController<
             @Parameter(description = "Номер страницы") @RequestParam(defaultValue = "0") int pageNumber,
             @Parameter(description = "Размер страницы") @RequestParam(defaultValue = "10") int size) {
 
-        return mapToPageDto(service.getAll(PageRequest.of(pageNumber, size)));
+        return mapToPageDto(service.getAll(PageRequest.of(pageNumber, size, Sort.by("id"))));
     }
 
     @GetMapping("/{id}")
@@ -62,12 +66,22 @@ public abstract class AbstractCrudController<
     })
     @GetMapping("/search")
     public PageDto<TDto> search(
-            @Parameter(description = "Имя поля") @RequestParam String field,
-            @Parameter(description = "Значение поля") @RequestParam String value,
+            @Parameter(description = "Поля фильтрации (все query параметры)") @RequestParam Map<String, String> allRequestParams,
             @Parameter(description = "Номер страницы") @RequestParam(defaultValue = "0") int pageNumber,
             @Parameter(description = "Размер страницы") @RequestParam(defaultValue = "10") int size) {
 
-        return mapToPageDto(service.searchByValueInField(field, value, PageRequest.of(pageNumber, size)));
+        allRequestParams.remove("pageNumber");
+        allRequestParams.remove("size");
+        return mapToPageDto(service.searchByValueInField(allRequestParams, PageRequest.of(pageNumber, size)));
+    }
+
+    @Operation(summary = "Получить список разрешенных полей для поиска")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Успешно получено")
+    })
+    @GetMapping("/search/fields")
+    public Map<String, String> getSearchFields(){
+        return service.getAllowedSearchFieldsWithLabels();
     }
 
     @PutMapping

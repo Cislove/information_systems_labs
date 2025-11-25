@@ -8,7 +8,7 @@ import se.ifmo.model.Country;
 
 import java.util.Date;
 
-@Schema(description = "Person DTO")
+@Schema(description = "Person DTO", requiredProperties = {"id"})
 public record PersonDto(
     int id,
     String name,

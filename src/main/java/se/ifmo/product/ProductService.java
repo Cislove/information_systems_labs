@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
-public class ProductService extends AbstractCrudService <
+public class ProductService extends AbstractCrudService<
         Product,
         ProductRepository,
         ProductDto,
@@ -26,12 +26,27 @@ public class ProductService extends AbstractCrudService <
     }
 
     @Override
+    protected Map<String, String> getAllowedSearchFieldsWithLabels() {
+        return Map.of(
+                "name", "название",
+                "part_number", "серийный номер");
+    }
+
+    @Override
     protected Set<String> getAllowedSearchFields() {
-        return Set.of("name", "part_number");
+        return Set.of("name", "coordinates.id", "manufacturer.id", "price", "manufactureCost", "rating", "partNumber", "owner.id");
     }
 
     @Override
     protected Map<String, String> getFieldMapping() {
-        return Map.of("name", "name", "partNumber", "part_number");
+        return Map.of(
+                "name", "name",
+                "coordinates", "coordinates.id",
+                "manufacturer", "manufacturer.id",
+                "price", "price",
+                "manufactureCost", "manufactureCost",
+                "rating", "rating",
+                "partNumber", "partNumber",
+                "owner", "owner.id");
     }
 }

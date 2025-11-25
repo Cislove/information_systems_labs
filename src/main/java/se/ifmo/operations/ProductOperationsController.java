@@ -34,7 +34,7 @@ public class ProductOperationsController {
         return productOperationsService.countOfProductsWhereRatingGreaterThan(rating);
     }
 
-    @GetMapping("/unitOfMeasure/productWhereUnitOfMeasureIsSet")
+    @PostMapping("/unitOfMeasure/productWhereUnitOfMeasureIsSet")
     public List<ProductDto> getUnitOfMeasureProductWhereUnitOfMeasureIsSet(
             @RequestBody List<UnitOfMeasure> unitOfMeasures) {
 

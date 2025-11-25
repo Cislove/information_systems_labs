@@ -26,12 +26,25 @@ public class OrganizationService extends AbstractCrudService<
     }
 
     @Override
+    protected Map<String, String> getAllowedSearchFieldsWithLabels() {
+        return Map.of(
+                "name", "название",
+                "full_name", "полное название"
+        );
+    }
+
+    @Override
     protected Set<String> getAllowedSearchFields() {
-        return Set.of("name", "full_name");
+        return Set.of("name", "officialAddress.id", "annualTurnover", "employeesCount", "fullName", "rating");
     }
 
     @Override
     protected Map<String, String> getFieldMapping() {
-        return Map.of("name", "name", "fullName", "full_name");
+        return Map.of("name", "name",
+                "officialAddress", "officialAddress.id",
+                "annualTurnover", "annualTurnover",
+                "employeesCount", "employeesCount",
+                "fullName", "fullName",
+                "rating", "rating");
     }
 }

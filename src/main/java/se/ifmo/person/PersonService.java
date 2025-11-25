@@ -25,12 +25,18 @@ public class PersonService extends AbstractCrudService<
     }
 
     @Override
+    protected Map<String, String> getAllowedSearchFieldsWithLabels() {
+        return Map.of(
+                "name", "имя");
+    }
+
+    @Override
     protected Set<String> getAllowedSearchFields() {
-        return Set.of("name");
+        return Set.of("name", "location.id");
     }
 
     @Override
     protected Map<String, String> getFieldMapping() {
-        return Map.of("name", "name");
+        return Map.of("name", "name", "location", "location.id");
     }
 }
