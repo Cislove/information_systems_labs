@@ -1,0 +1,1267 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Person API
+  description: Управление людьми
+paths:
+  /api/v1/product:
+    get:
+      tags:
+      - product-controller
+      summary: Получить страницу объектов
+      operationId: productGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoProductDto"
+    put:
+      tags:
+      - product-controller
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: productUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - product-controller
+      summary: Создать объект и получить в ответ его ID
+      operationId: productCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/person:
+    get:
+      tags:
+      - Person API
+      summary: Получить страницу объектов
+      operationId: personGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoPersonDto"
+    put:
+      tags:
+      - Person API
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: personUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - Person API
+      summary: Создать объект и получить в ответ его ID
+      operationId: personCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/organization:
+    get:
+      tags:
+      - organization-controller
+      summary: Получить страницу объектов
+      operationId: organizationGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoOrganizationDto"
+    put:
+      tags:
+      - organization-controller
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: organizationUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - organization-controller
+      summary: Создать объект и получить в ответ его ID
+      operationId: organizationCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/location:
+    get:
+      tags:
+      - location-controller
+      summary: Получить страницу объектов
+      operationId: locationGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoLocationDto"
+    put:
+      tags:
+      - location-controller
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: locationUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - location-controller
+      summary: Создать объект и получить в ответ его ID
+      operationId: locationCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/coordinates:
+    get:
+      tags:
+      - coordinates-controller
+      summary: Получить страницу объектов
+      operationId: coordinatesGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoCoordinatesDto"
+    put:
+      tags:
+      - coordinates-controller
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: coordinatesUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoordinatesDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - coordinates-controller
+      summary: Создать объект и получить в ответ его ID
+      operationId: coordinatesCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoordinatesDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/address:
+    get:
+      tags:
+      - address-controller
+      summary: Получить страницу объектов
+      operationId: addressGetAll
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoAddressDto"
+    put:
+      tags:
+      - address-controller
+      summary: "Обновить объект полностью, кроме его ID"
+      operationId: addressUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно обновлено
+    post:
+      tags:
+      - address-controller
+      summary: Создать объект и получить в ответ его ID
+      operationId: addressCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddressDto"
+        required: true
+      responses:
+        "200":
+          description: Успешно создано
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+  /api/v1/product/unitOfMeasure/productWhereUnitOfMeasureIsSet:
+    post:
+      tags:
+      - product-operations-controller
+      operationId: productoperationsGetUnitOfMeasureProductWhereUnitOfMeasureIsSet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                enum:
+                - METERS
+                - CENTIMETERS
+                - LITERS
+                - GRAMS
+                - MILLIGRAMS
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductDto"
+  /api/v1/product/price/reduce:
+    post:
+      tags:
+      - product-operations-controller
+      operationId: productoperationsReducePrice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceReduceDto"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /api/v1/product/{id}:
+    get:
+      tags:
+      - product-controller
+      summary: Получить объект по id
+      operationId: productGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProductDto"
+    delete:
+      tags:
+      - product-controller
+      summary: Удалить объект по ID
+      operationId: productDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/product/search:
+    get:
+      tags:
+      - product-controller
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: productSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoProductDto"
+  /api/v1/product/search/fields:
+    get:
+      tags:
+      - product-controller
+      summary: Получить список разрешенных полей для поиска
+      operationId: productGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/product/rating/sum:
+    get:
+      tags:
+      - product-operations-controller
+      operationId: productoperationsGetRatingSum
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: number
+                format: double
+  /api/v1/product/rating/countOfProductWhereRatingGreaterThan/{rating}:
+    get:
+      tags:
+      - product-operations-controller
+      operationId: productoperationsGetRatingCountOfProductWhereRatingGreaterThat
+      parameters:
+      - name: rating
+        in: path
+        required: true
+        schema:
+          type: number
+          format: double
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int64
+  /api/v1/product/rating/countOfGroups:
+    get:
+      tags:
+      - product-operations-controller
+      operationId: productoperationsGetRatingCountOfGroups
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int64
+  /api/v1/person/{id}:
+    get:
+      tags:
+      - Person API
+      summary: Получить объект по id
+      operationId: personGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PersonDto"
+    delete:
+      tags:
+      - Person API
+      summary: Удалить объект по ID
+      operationId: personDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/person/search:
+    get:
+      tags:
+      - Person API
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: personSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoPersonDto"
+  /api/v1/person/search/fields:
+    get:
+      tags:
+      - Person API
+      summary: Получить список разрешенных полей для поиска
+      operationId: personGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/organization/{id}:
+    get:
+      tags:
+      - organization-controller
+      summary: Получить объект по id
+      operationId: organizationGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/OrganizationDto"
+    delete:
+      tags:
+      - organization-controller
+      summary: Удалить объект по ID
+      operationId: organizationDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/organization/search:
+    get:
+      tags:
+      - organization-controller
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: organizationSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoOrganizationDto"
+  /api/v1/organization/search/fields:
+    get:
+      tags:
+      - organization-controller
+      summary: Получить список разрешенных полей для поиска
+      operationId: organizationGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/location/{id}:
+    get:
+      tags:
+      - location-controller
+      summary: Получить объект по id
+      operationId: locationGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LocationDto"
+    delete:
+      tags:
+      - location-controller
+      summary: Удалить объект по ID
+      operationId: locationDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/location/search:
+    get:
+      tags:
+      - location-controller
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: locationSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoLocationDto"
+  /api/v1/location/search/fields:
+    get:
+      tags:
+      - location-controller
+      summary: Получить список разрешенных полей для поиска
+      operationId: locationGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/coordinates/{id}:
+    get:
+      tags:
+      - coordinates-controller
+      summary: Получить объект по id
+      operationId: coordinatesGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CoordinatesDto"
+    delete:
+      tags:
+      - coordinates-controller
+      summary: Удалить объект по ID
+      operationId: coordinatesDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/coordinates/search:
+    get:
+      tags:
+      - coordinates-controller
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: coordinatesSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoCoordinatesDto"
+  /api/v1/coordinates/search/fields:
+    get:
+      tags:
+      - coordinates-controller
+      summary: Получить список разрешенных полей для поиска
+      operationId: coordinatesGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/address/{id}:
+    get:
+      tags:
+      - address-controller
+      summary: Получить объект по id
+      operationId: addressGetById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/AddressDto"
+    delete:
+      tags:
+      - address-controller
+      summary: Удалить объект по ID
+      operationId: addressDelete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: Успешно удален
+  /api/v1/address/search:
+    get:
+      tags:
+      - address-controller
+      summary: Получить страницу объектов с заданным значением поля
+      operationId: addressSearch
+      parameters:
+      - name: allRequestParams
+        in: query
+        description: Поля фильтрации (все query параметры)
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PageDtoAddressDto"
+  /api/v1/address/search/fields:
+    get:
+      tags:
+      - address-controller
+      summary: Получить список разрешенных полей для поиска
+      operationId: addressGetSearchFields
+      responses:
+        "200":
+          description: Успешно получено
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+components:
+  schemas:
+    AddressDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        street:
+          type: string
+        zipCode:
+          type: string
+        town:
+          $ref: "#/components/schemas/LocationDto"
+      required:
+      - id
+    CoordinatesDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        x:
+          type: number
+          format: double
+        "y":
+          type: number
+          format: double
+      required:
+      - id
+    LocationDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        x:
+          type: number
+          format: float
+        "y":
+          type: integer
+          format: int64
+        z:
+          type: integer
+          format: int64
+      required:
+      - id
+    OrganizationDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        officialAddress:
+          $ref: "#/components/schemas/AddressDto"
+        annualTurnover:
+          type: integer
+          format: int32
+        employeesCount:
+          type: integer
+          format: int64
+        fullName:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        type:
+          type: string
+          enum:
+          - COMMERCIAL
+          - PUBLIC
+          - TRUST
+          - OPEN_JOINT_STOCK_COMPANY
+      required:
+      - id
+    PersonDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        eyeColor:
+          type: string
+          enum:
+          - BLUE
+          - YELLOW
+          - ORANGE
+        hairColor:
+          type: string
+          enum:
+          - BLUE
+          - YELLOW
+          - ORANGE
+        location:
+          $ref: "#/components/schemas/LocationDto"
+        birthday:
+          type: string
+          format: date-time
+        nationality:
+          type: string
+          enum:
+          - USA
+          - CHINA
+          - VATICAN
+          - THAILAND
+          - NORTH_KOREA
+      required:
+      - id
+    ProductDto:
+      type: object
+      description: объект
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        coordinates:
+          $ref: "#/components/schemas/CoordinatesDto"
+        creationDate:
+          type: string
+          format: date-time
+        unitOfMeasure:
+          type: string
+          enum:
+          - METERS
+          - CENTIMETERS
+          - LITERS
+          - GRAMS
+          - MILLIGRAMS
+        manufacturer:
+          $ref: "#/components/schemas/OrganizationDto"
+        price:
+          type: number
+          format: double
+        manufactureCost:
+          type: integer
+          format: int32
+        rating:
+          type: number
+          format: float
+        partNumber:
+          type: string
+        owner:
+          $ref: "#/components/schemas/PersonDto"
+      required:
+      - id
+    PriceReduceDto:
+      type: object
+      properties:
+        percent:
+          type: number
+          format: double
+          maximum: 100
+          minimum: 0
+    PageDtoProductDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    PageDtoPersonDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    PageDtoOrganizationDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    PageDtoLocationDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocationDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    PageDtoCoordinatesDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CoordinatesDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    PageDtoAddressDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddressDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
