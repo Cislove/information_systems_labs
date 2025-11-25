@@ -76,7 +76,6 @@ export function DataTable<T extends { id: string | number }>({
         loadData();
     }, [loadData]);
 
-    // Реакция на уведомления: в режиме фильтров дергаем перезагрузку SearchFilter
     React.useEffect(() => {
         const last = toasts[toasts.length - 1];
         if (!last) return;
@@ -163,8 +162,6 @@ export function DataTable<T extends { id: string | number }>({
                     }}
                     page={page}
                     size={pageSize}
-                    // Если в вашем SearchFilter есть try/catch — прокиньте ошибку сюда:
-                    // onError={(e) => setErrorMsg(errorText(e))}
                 />
             )}
 

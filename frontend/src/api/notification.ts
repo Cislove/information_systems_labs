@@ -1,4 +1,3 @@
-// frontend/src/api/notification.ts
 export interface NotificationDto {
     type: 'ADD' | 'UPDATE' | 'DELETE' | 'ERROR';
     entityType: string;

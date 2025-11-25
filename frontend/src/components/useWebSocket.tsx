@@ -13,9 +13,7 @@ interface UseWebSocketOptions {
   reconnectInterval?: number;
 }
 
-/**
- * Хук для подключения к WebSocket с авто-переподключением.
- */
+
 export function useWebSocket({ url, onMessage, reconnectInterval = 5000 }: UseWebSocketOptions) {
   const socketRef = useRef<WebSocket | null>(null);
 

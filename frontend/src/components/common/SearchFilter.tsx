@@ -94,7 +94,6 @@ export function SearchFilter<T>({
         await fetchAndSet(page, size, undefined);
     };
 
-    // добавлен reloadKey в зависимости
     useEffect(() => {
         fetchAndSet(page, size, lastFilters);
     }, [page, size, reloadKey, lastFilters]);

@@ -1,4 +1,3 @@
-// frontend/src/components/notifications/NotificationProvider.tsx
 import React, { createContext, useContext, useCallback, useState, useEffect } from 'react';
 import { notificationSocket, NotificationDto } from '../../api/notification';
 
