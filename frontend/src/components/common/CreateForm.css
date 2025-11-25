@@ -1,0 +1,97 @@
+.form-container {
+    max-width: 600px;        /* ограничиваем ширину */
+    width: 90%;              /* делаем адаптивной */
+    max-height: 90vh;        /* максимум 90% высоты окна */
+    overflow-y: auto;        /* скролл при переполнении */
+    margin: 0 auto;          /* центрируем по горизонтали */
+    padding: 20px;
+    box-sizing: border-box;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.generic-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%; /* <-- форма растягивается по ширине */
+    box-sizing: border-box;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.form-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.form-input.error {
+    border-color: #dc3545;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ===== Кнопки формы ===== */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancel-button:hover {
+    background-color: #545b62;
+}
+
+.submit-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.submit-button:disabled {
+    background-color: #adb5bd;
+    cursor: not-allowed;
+}
