@@ -7,7 +7,13 @@ import se.ifmo.common.placemark.Dto;
 public record CoordinatesDto(
         Integer id,
         double x,
-        double y
+        float y
 ) implements Dto {
+
+    @Schema(hidden = true)
+    @Override
+    public String getIndexName() {
+        return "coordinates";
+    }
 
 }

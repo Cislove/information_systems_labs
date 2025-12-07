@@ -1,25 +1,28 @@
 package se.ifmo.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Isolation;
 import se.ifmo.common.placemark.AbstractRepository;
 import se.ifmo.common.placemark.Dto;
 import se.ifmo.errors.NotFoundException;
 import se.ifmo.errors.SearchException;
+import se.ifmo.imports.IndexDocument;
+import se.ifmo.imports.OpenSearchService;
 import se.ifmo.notification.NotificationService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -35,6 +38,10 @@ public abstract class AbstractCrudService<
     private final TMapper mapper;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private OpenSearchService openSearchService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public TDto getById(TId id) {
         var dto = repository.findById(id).orElseThrow(() ->
@@ -45,6 +52,7 @@ public abstract class AbstractCrudService<
     public Page<TDto> searchByValueInField(Map<String, String> fieldAndValue, Pageable pageable) {
         validateSearchFields(fieldAndValue.keySet().stream().toList());
         convertSearchFields(fieldAndValue);
+
         try{
             Specification<TEntity> spec = createEqualsSpecification(fieldAndValue);
             return repository.findAll(spec, pageable).map(mapper::toDto);
@@ -54,10 +62,46 @@ public abstract class AbstractCrudService<
         }
     }
 
+    public Page<TDto> searchAggregated(
+            Map<String, String> fieldAndValue,
+            Pageable pageable
+    ){
+        Page<TDto> dbPage = searchByValueInField(fieldAndValue, pageable);
+        List<TDto> dbResults = dbPage.getContent();
+        List<IndexDocument> osResults = new ArrayList<>();
+        List<TDto> osResultsPayload = new ArrayList<>();
+
+        try {
+            osResults = openSearchService.searchByExactMatch(
+                    getEntityName(),
+                    fieldAndValue
+            );
+            osResultsPayload = osResults.stream()
+                    .map(doc -> objectMapper.convertValue(doc.getPayload(), getDtoClass()))
+                    .toList();
+        }
+        catch (Exception _){
+
+        }
+
+        List<TDto> results = new ArrayList<>(dbResults);
+
+        for(int i = 0; i < osResults.size(); i++){
+            results.add(osResultsPayload.get(i));
+        }
+
+        int start = dbPage.getContent().isEmpty() ? ((int) (pageable.getOffset() - dbPage.getTotalElements())) : 0;
+        int end = Math.min(start + pageable.getPageSize(), results.size());
+        List<TDto> pageContent = results.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, dbPage.getTotalElements() + osResults.size());
+    }
+
     public Page<TDto> getAll(Pageable pageable) {
         return repository.findAll(pageable).map(mapper::toDto);
     }
 
+    @Transactional()
     public TId create(TDto dto) {
         try {
             TEntity entity = mapper.toEntity(dto);
@@ -178,4 +222,6 @@ public abstract class AbstractCrudService<
     protected Map<String, String> getFieldMapping(){
         return Map.of();
     }
+
+    protected abstract Class<TDto> getDtoClass();
 }

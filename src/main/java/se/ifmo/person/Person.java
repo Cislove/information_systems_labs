@@ -36,7 +36,7 @@ public class Person implements AbstractEntity<Integer> {
     @Column(nullable = false)
     private Color hairColor; //Поле не может быть null
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "location_id")
     private Location location; //Поле не может быть null
 

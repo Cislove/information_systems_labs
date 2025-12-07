@@ -24,4 +24,8 @@ public class CoordinatesService extends AbstractCrudService<
         return "coordinates";
     }
 
+    @Override
+    protected Class<CoordinatesDto> getDtoClass() {
+        return CoordinatesDto.class;
+    }
 }

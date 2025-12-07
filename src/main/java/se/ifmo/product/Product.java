@@ -31,7 +31,7 @@ public class Product implements AbstractEntity<Integer> {
     @Check(constraints = "length(name) > 0")
     private String name; //Поле не может быть null, Строка не может быть пустой
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "coordinates_id",nullable = false)
     private Coordinates coordinates; //Поле не может быть null
 
@@ -42,7 +42,7 @@ public class Product implements AbstractEntity<Integer> {
     @Enumerated(EnumType.STRING)
     private UnitOfMeasure unitOfMeasure; //Поле может быть null
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "organization_id")
     private Organization manufacturer; //Поле может быть null
 
@@ -57,7 +57,7 @@ public class Product implements AbstractEntity<Integer> {
     @Column(nullable = false)
     private String partNumber; //Поле не может быть null
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "person_id")
     private Person owner; //Поле может быть null
 

@@ -19,7 +19,7 @@ import se.ifmo.model.OrganizationType;
 @Schema(hidden = true)
 public class Organization implements AbstractEntity<Integer> {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; //Значение поля должно быть больше 0, Значение этого поля должно быть уникальным, Значение этого поля должно генерироваться автоматически
 
     @Column(nullable = false)
@@ -27,7 +27,7 @@ public class Organization implements AbstractEntity<Integer> {
     private String name; //Поле не может быть null, Строка не может быть пустой
 
     @JoinColumn(name = "address_id", nullable = false)
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Address officialAddress; //Поле не может быть null
 
     @Column(nullable = false)

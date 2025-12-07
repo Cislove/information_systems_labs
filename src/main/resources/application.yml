@@ -1,11 +1,15 @@
 spring:
+  elasticsearch:
+#    username: admin
+#    password: "!Popash152"
+    uris: http://localhost:9200
   datasource:
     url: jdbc:postgresql://localhost:5432/mydb
     driver-class-name: org.postgresql.Driver
     username: myuser
     password: mypassword
   jpa:
-    show-sql: true
+#    show-sql: true
     hibernate:
       ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -23,12 +27,17 @@ spring:
 logging:
   level:
     org:
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
+#      hibernate:
+#        SQL: DEBUG
+#        type:
+#          descriptor:
+#            sql:
+#              BasicBinder: TRACE
+      apache:
+        http:
+          wire: DEBUG
+      opensearch: DEBUG
+
 springdoc:
   operation-id-template: "{className}_{methodName}"
   api-docs:
@@ -45,3 +54,9 @@ springdoc:
     - group: default
       paths-to-match: /**
   paths-to-match: /**
+
+app-config:
+  files:
+    allowed-formats:
+      - csv
+      - json

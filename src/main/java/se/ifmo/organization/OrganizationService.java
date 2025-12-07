@@ -47,4 +47,9 @@ public class OrganizationService extends AbstractCrudService<
                 "fullName", "fullName",
                 "rating", "rating");
     }
+
+    @Override
+    protected Class<OrganizationDto> getDtoClass() {
+        return OrganizationDto.class;
+    }
 }

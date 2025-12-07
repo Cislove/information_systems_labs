@@ -72,7 +72,7 @@ public abstract class AbstractCrudController<
 
         allRequestParams.remove("pageNumber");
         allRequestParams.remove("size");
-        return mapToPageDto(service.searchByValueInField(allRequestParams, PageRequest.of(pageNumber, size)));
+        return mapToPageDto(service.searchAggregated(allRequestParams, PageRequest.of(pageNumber, size)));
     }
 
     @Operation(summary = "Получить список разрешенных полей для поиска")

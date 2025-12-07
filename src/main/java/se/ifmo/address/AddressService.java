@@ -45,4 +45,9 @@ public class AddressService extends AbstractCrudService<
                 "zipCode", "zipCode",
                 "town", "town.id");
     }
+
+    @Override
+    protected Class<AddressDto> getDtoClass() {
+        return AddressDto.class;
+    }
 }

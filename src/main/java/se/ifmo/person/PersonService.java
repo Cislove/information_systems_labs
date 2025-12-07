@@ -39,4 +39,9 @@ public class PersonService extends AbstractCrudService<
     protected Map<String, String> getFieldMapping() {
         return Map.of("name", "name", "location", "location.id");
     }
+
+    @Override
+    protected Class<PersonDto> getDtoClass() {
+        return PersonDto.class;
+    }
 }

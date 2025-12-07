@@ -41,7 +41,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
     public Page<Coordinates> findAll(Pageable pageable){
         log.info("Find all Coordinates pageable: {}", pageable);
         Session session = entityManager.unwrap(Session.class);
-        session.getTransaction().begin();
         List<Coordinates> results = session.createQuery(
                 "FROM Coordinates cord ORDER BY cord.id", Coordinates.class)
                 .setFirstResult((int) pageable.getOffset())
@@ -49,8 +48,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
                 .getResultList();
 
         Long total = session.createQuery(TOTAL_SIZE_QUERY, Long.class).getSingleResult();
-
-        session.getTransaction().commit();
 
         return new PageImpl<>(results, pageable, total);
     }

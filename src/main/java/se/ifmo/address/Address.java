@@ -28,7 +28,7 @@ public class Address implements AbstractEntity<Integer> {
     @Check(constraints = "length(zip_code) >= 7")
     private String zipCode; //Длина строки должна быть не меньше 7, Поле не может быть null
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(nullable = false, name = "location_id")
     private Location town; //Поле не может быть null
 

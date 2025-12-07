@@ -1,4 +1,6 @@
 package se.ifmo.common.placemark;
 
-public interface Dto {
+import se.ifmo.common.SearchEngineIndexed;
+
+public interface Dto extends SearchEngineIndexed {
 }

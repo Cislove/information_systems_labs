@@ -21,4 +21,9 @@ public class LocationService extends AbstractCrudService<
     public String getEntityName() {
         return "location";
     }
+
+    @Override
+    protected Class<LocationDto> getDtoClass() {
+        return LocationDto.class;
+    }
 }

@@ -1,8 +1,11 @@
 package se.ifmo.product;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import se.ifmo.common.AbstractCrudService;
+import se.ifmo.imports.ImportService;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,4 +52,10 @@ public class ProductService extends AbstractCrudService<
                 "partNumber", "partNumber",
                 "owner", "owner.id");
     }
+
+    @Override
+    protected Class<ProductDto> getDtoClass() {
+        return ProductDto.class;
+    }
+
 }

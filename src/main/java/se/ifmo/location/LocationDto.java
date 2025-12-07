@@ -5,9 +5,15 @@ import se.ifmo.common.placemark.Dto;
 
 @Schema(requiredProperties = {"id"})
 public record LocationDto(
-        int id,
+        Integer id,
         float x,
-        long y,
-        long z
+        Long y,
+        Long z
 ) implements Dto {
+    @Schema(hidden = true)
+    @Override
+    public String getIndexName() {
+        return "location";
+    }
+
 }
