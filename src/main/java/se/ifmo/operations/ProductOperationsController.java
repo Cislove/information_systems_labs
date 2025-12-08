@@ -29,7 +29,7 @@ public class ProductOperationsController {
 
     @GetMapping("/rating/countOfProductWhereRatingGreaterThan/{rating}")
     public long getRatingCountOfProductWhereRatingGreaterThat(
-            @PathVariable double rating) {
+            @PathVariable float rating) {
 
         return productOperationsService.countOfProductsWhereRatingGreaterThan(rating);
     }

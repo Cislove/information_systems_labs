@@ -35,7 +35,7 @@ public class AddressService extends AbstractCrudService<
 
     @Override
     protected Set<String> getAllowedSearchFields() {
-        return Set.of("street", "zipCode", "town");
+        return Set.of("street", "zipCode", "town.id");
     }
 
     @Override

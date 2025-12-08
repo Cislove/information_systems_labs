@@ -28,10 +28,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     useEffect(() => {
         const unsub = notificationSocket.subscribe(dto => {
+            // Пушим все уведомления, включая allIds. Фильтрация отображения будет в ToastContainer.
             push(dto);
         });
         return () => {
-            unsub(); // cleanup возвращает void
+            unsub();
         };
     }, [push]);
 

@@ -14,9 +14,9 @@ export interface Column<T> {
 export interface DataTableApi<T> {
     getAll: (page: number, size: number) => Promise<{ content: T[]; totalSize: number }>;
     getWithFilters?: (page: number, size: number, filters?: { [key: string]: string }) => Promise<{ content: T[]; totalSize: number }>;
-    create: (values: Partial<Omit<T, "id">>) => Promise<number>;
-    update: (values: Partial<T>) => Promise<void>;
-    delete: (id: number) => Promise<void>;
+    create?: (values: Partial<Omit<T, "id">>) => Promise<number>;
+    update?: (values: Partial<T>) => Promise<void>;
+    delete?: (id: number) => Promise<void>;
 }
 
 interface DataTableProps<T> {
@@ -30,32 +30,39 @@ interface DataTableProps<T> {
         initialValues?: Partial<T>;
     }>;
     resourceKey: string;
+    uploadEnabled: boolean;
+    onDataChanged?: () => void;
 }
 
 export function DataTable<T extends { id: string | number }>({
-                                                                 columns,
-                                                                 api,
-                                                                 pageSize = 10,
-                                                                 filterFields,
-                                                                 FormComponent,
-                                                                 resourceKey,
-                                                             }: DataTableProps<T>) {
+    columns,
+    api,
+    pageSize = 10,
+    filterFields,
+    FormComponent,
+    resourceKey,
+    uploadEnabled,
+    onDataChanged
+}: DataTableProps<T>) {
     const [data, setData] = React.useState<T[]>([]);
     const [page, setPage] = React.useState(0);
     const [total, setTotal] = React.useState(0);
     const [loading, setLoading] = React.useState(false);
     const [showForm, setShowForm] = React.useState(false);
     const [editingItem, setEditingItem] = React.useState<Partial<T> | null>(null);
+    const [uploadProgress, setUploadProgress] = React.useState<number | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // баннер ошибки
     const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
-
-    // тикер для перезагрузки в режиме фильтров
     const [reloadTick, setReloadTick] = React.useState(0);
 
     const { toasts, remove } = useNotifications();
 
     const filtersEnabled = !!(filterFields && api.getWithFilters);
+    const hasCreate = !!api.create && !!FormComponent;
+    const hasUpdate = !!api.update && !!FormComponent;
+    const hasDelete = !!api.delete;
+    const hasActions = hasUpdate || hasDelete;
 
     const loadData = React.useCallback(async () => {
         if (filtersEnabled) return;
@@ -76,24 +83,95 @@ export function DataTable<T extends { id: string | number }>({
         loadData();
     }, [loadData]);
 
+    // Обработка уведомлений из сокета
     React.useEffect(() => {
         const last = toasts[toasts.length - 1];
         if (!last) return;
         const dto: NotificationDto = last.dto;
 
+        // 1) allIds: всегда обновляем текущую таблицу, тост не показываем
+        if (dto.allIds) {
+            remove(last.id);
+            if (filtersEnabled && api.getWithFilters) {
+                setReloadTick((t) => t + 1);
+            } else {
+                loadData();
+            }
+            onDataChanged?.();
+            return;
+        }
+
+        // 2) обычное entity-уведомление только для своей таблицы
         if (dto.entityType === resourceKey) {
             remove(last.id);
+            if (filtersEnabled && api.getWithFilters) {
+                setReloadTick((t) => t + 1);
+            } else {
+                loadData();
+            }
+            onDataChanged?.();
+        }
+    }, [toasts, resourceKey, filtersEnabled, api.getWithFilters, loadData, remove, onDataChanged]);
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setUploadProgress(0);
+            setErrorMsg(null);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener("progress", (e) => {
+                if (e.lengthComputable) {
+                    const progress = (e.loaded / e.total) * 100;
+                    setUploadProgress(progress);
+                }
+            });
+
+            await new Promise<void>((resolve, reject) => {
+                xhr.addEventListener("load", () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        try {
+                            const errorResponse = JSON.parse(xhr.responseText);
+                            reject(new Error(errorResponse.errorMessage || `HTTP ${xhr.status}`));
+                        } catch {
+                            reject(new Error(`HTTP ${xhr.status}: ${xhr.responseText}`));
+                        }
+                    }
+                });
+                xhr.addEventListener("error", () => reject(new Error("Ошибка сети")));
+                xhr.addEventListener("abort", () => reject(new Error("Загрузка отменена")));
+
+                xhr.open("POST", `http://localhost:8080/api/import/upload`);
+                xhr.send(formData);
+            });
+
+            setUploadProgress(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+
             if (filtersEnabled) {
                 setReloadTick((t) => t + 1);
             } else {
                 loadData();
             }
+        } catch (e) {
+            setErrorMsg(errorText(e));
+            setUploadProgress(null);
         }
-    }, [toasts, resourceKey, filtersEnabled, loadData, remove]);
+    };
 
     const handleDelete = async (id: number) => {
+        if (!api.delete) return;
         try {
-            if (!api.delete) return;
             if (!window.confirm("Удалить запись?")) return;
             await api.delete(id);
             if (filtersEnabled) {
@@ -101,6 +179,7 @@ export function DataTable<T extends { id: string | number }>({
             } else {
                 loadData();
             }
+            onDataChanged?.();
         } catch (e) {
             setErrorMsg(errorText(e));
         }
@@ -112,7 +191,7 @@ export function DataTable<T extends { id: string | number }>({
         <div className="data-table-container">
             <div className="data-table-header">
                 <h2>Таблица</h2>
-                {FormComponent && (
+                {hasCreate && (
                     <button
                         onClick={() => {
                             setEditingItem(null);
@@ -123,6 +202,53 @@ export function DataTable<T extends { id: string | number }>({
                     </button>
                 )}
             </div>
+
+            {uploadEnabled && (
+                <>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        style={{display: "none"}}
+                        onChange={handleFileUpload}
+                        disabled={uploadProgress !== null}
+                    />
+                    <button
+                        className="data-table-upload-button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadProgress !== null}
+                    >
+                        <span className="data-table-upload-icon">📤</span>
+                        <span className="data-table-upload-text">
+                            {uploadProgress !== null ? "Загрузка..." : "Загрузить файл"}
+                        </span>
+                    </button>
+                </>
+            )}
+
+            {uploadProgress !== null && (
+                <div style={{ marginBottom: 12 }}>
+                    <div style={{ marginBottom: 4, fontSize: 14, fontWeight: 500 }}>
+                        Загрузка файла: {Math.round(uploadProgress)}%
+                    </div>
+                    <div style={{
+                        width: "100%",
+                        height: 20,
+                        background: "#e0e0e0",
+                        borderRadius: 4,
+                        overflow: "hidden"
+                    }}>
+                        <div
+                            style={{
+                                width: `${uploadProgress}%`,
+                                height: "100%",
+                                background: "linear-gradient(90deg, #4caf50, #8bc34a)",
+                                transition: "width 0.3s ease",
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
+
 
             {errorMsg && (
                 <div
@@ -174,7 +300,7 @@ export function DataTable<T extends { id: string | number }>({
                         {columns.map((col) => (
                             <th key={String(col.key)}>{col.title}</th>
                         ))}
-                        <th>Действия</th>
+                        {hasActions && <th>Действия</th>}
                     </tr>
                     </thead>
                     <tbody>
@@ -185,27 +311,33 @@ export function DataTable<T extends { id: string | number }>({
                                     {col.render ? col.render(row) : (row[col.key] as any)}
                                 </td>
                             ))}
-                            <td>
-                                <button
-                                    className="action-button edit-button"
-                                    onClick={() => {
-                                        setEditingItem(row);
-                                        setShowForm(true);
-                                    }}
-                                    aria-label="Редактировать запись"
-                                >
-                                    <span className="action-icon">✏</span>
-                                    <span className="action-text">Редактировать</span>
-                                </button>
-                                <button
-                                    className="action-button delete-button"
-                                    onClick={() => handleDelete(+row.id)}
-                                    aria-label="Удалить запись"
-                                >
-                                    <span className="action-icon">🗑</span>
-                                    <span className="action-text">Удалить</span>
-                                </button>
-                            </td>
+                            {hasActions && (
+                                <td>
+                                    {hasUpdate && (
+                                        <button
+                                            className="action-button edit-button"
+                                            onClick={() => {
+                                                setEditingItem(row);
+                                                setShowForm(true);
+                                            }}
+                                            aria-label="Редактировать запись"
+                                        >
+                                            <span className="action-icon">✏</span>
+                                            <span className="action-text">Редактировать</span>
+                                        </button>
+                                    )}
+                                    {hasDelete && (
+                                        <button
+                                            className="action-button delete-button"
+                                            onClick={() => handleDelete(+row.id)}
+                                            aria-label="Удалить запись"
+                                        >
+                                            <span className="action-icon">🗑</span>
+                                            <span className="action-text">Удалить</span>
+                                        </button>
+                                    )}
+                                </td>
+                            )}
                         </tr>
                     ))}
                     </tbody>
@@ -234,7 +366,7 @@ export function DataTable<T extends { id: string | number }>({
                 </div>
             )}
 
-            {showForm && FormComponent && (
+            {showForm && FormComponent && hasUpdate && (
                 <div
                     className="modal-overlay"
                     role="dialog"
@@ -257,9 +389,13 @@ export function DataTable<T extends { id: string | number }>({
                                         try {
                                             setErrorMsg(null);
                                             if (editingItem && editingItem.id) {
-                                                await api.update({ ...values, id: editingItem.id });
+                                                if (api.update) {
+                                                    await api.update({ ...values, id: editingItem.id });
+                                                }
                                             } else {
-                                                await api.create(values);
+                                                if (api.create) {
+                                                    await api.create(values);
+                                                }
                                             }
                                             setShowForm(false);
                                             if (filterFields && api.getWithFilters) {
@@ -267,6 +403,7 @@ export function DataTable<T extends { id: string | number }>({
                                             } else {
                                                 loadData();
                                             }
+                                            onDataChanged?.();
                                         } catch (e) {
                                             setErrorMsg(errorText(e));
                                         }

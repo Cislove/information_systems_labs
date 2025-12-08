@@ -3,7 +3,6 @@ package se.ifmo.common;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
@@ -14,6 +13,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import se.ifmo.common.placemark.AbstractRepository;
 import se.ifmo.common.placemark.Dto;
 import se.ifmo.errors.NotFoundException;
@@ -34,7 +35,7 @@ public abstract class AbstractCrudService<
         TId
         > {
 
-    private final TRepository repository;
+    protected final TRepository repository;
     private final TMapper mapper;
     @Autowired
     private NotificationService notificationService;
@@ -43,6 +44,7 @@ public abstract class AbstractCrudService<
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Transactional(readOnly = true)
     public TDto getById(TId id) {
         var dto = repository.findById(id).orElseThrow(() ->
                 new NotFoundException("Entity with id: " + id + "not found"));
@@ -97,33 +99,45 @@ public abstract class AbstractCrudService<
         return new PageImpl<>(pageContent, pageable, dbPage.getTotalElements() + osResults.size());
     }
 
+    @Transactional(readOnly = true)
     public Page<TDto> getAll(Pageable pageable) {
-        return repository.findAll(pageable).map(mapper::toDto);
+        return searchAggregated(Map.of(), pageable);
     }
 
     @Transactional()
+    public TId save(TEntity entity){
+        entity.setId(null);
+        entity = repository.save(entity);
+        return entity.getId();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = IllegalArgumentException.class)
     public TId create(TDto dto) {
         try {
-            TEntity entity = mapper.toEntity(dto);
-            entity.setId(null);
-            entity = repository.save(entity);
+            var entity = mapper.toEntity(dto);
+            var id = save(entity);
             notificationService.sendAddNotification(
                     entity.getStringId(),
                     getEntityName(),
                     false);
-            return entity.getId();
-        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
+
+            return id;
+        }
+        catch (DataIntegrityViolationException | ConstraintViolationException e) {
+            System.out.println(e.getMessage());
             log.atWarn().setMessage(e.getMessage()).log();
             throw new IllegalArgumentException("incorrect value/values");
         }
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void update(TDto dto) {
         try {
             TEntity entity = mapper.toEntity(dto);
             checkIdExists(entity.getId());
+            var id = repository.save(entity);
             notificationService.sendUpdateNotification(
-                    repository.save(entity).getStringId(),
+                    id.getStringId(),
                     getEntityName(),
                     false);
         } catch (DataIntegrityViolationException | ConstraintViolationException e) {
@@ -131,6 +145,7 @@ public abstract class AbstractCrudService<
         }
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void delete(TId id) {
         checkIdExists(id);
         repository.deleteById(id);

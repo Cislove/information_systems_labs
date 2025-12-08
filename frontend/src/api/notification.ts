@@ -1,8 +1,8 @@
 export interface NotificationDto {
     type: 'ADD' | 'UPDATE' | 'DELETE' | 'ERROR';
     entityType: string;
-    allIds: boolean,
-    entityId: number;
+    allIds: boolean;
+    entityId: string | null;
 }
 
 type Listener = (n: NotificationDto) => void;

@@ -6,15 +6,15 @@ import { addressFields, AddressForm } from "../forms/AddressForm";
 import { personFields } from "../forms/PersonForm";
 import { errorText } from "../../api/error";
 
-export function AddressTable() {
+export function AddressTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<AddressDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: (item: AddressDto) => item.id || "ОБРАБАТЫВАЕТСЯ"},
         { title: "Улица", key: "street" },
         { title: "Zip code", key: "zipCode" },
         {
             title: "ID города",
             key: "id" as any,
-            render: (item: AddressDto) => item.town?.id || "-",
+            render: (item: AddressDto) => item.town?.id || "ОБРАБАТЫВАЕТСЯ",
         },
     ];
 
@@ -84,6 +84,8 @@ export function AddressTable() {
             FormComponent={AddressForm}
             filterFields={addressFields}
             resourceKey={"address"}
+            uploadEnabled={true}
+            onDataChanged={onDataChanged}
         />
     );
 }

@@ -8,4 +8,5 @@ import se.ifmo.common.placemark.AbstractRepository;
 @Repository
 public interface OrganizationRepository extends AbstractRepository<Organization, Integer>,
         JpaRepository<Organization, Integer>, JpaSpecificationExecutor<Organization> {
+
 }

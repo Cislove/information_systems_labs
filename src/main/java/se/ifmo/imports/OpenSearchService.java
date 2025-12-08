@@ -1,30 +1,28 @@
 package se.ifmo.imports;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.Index;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.Refresh;
-import org.opensearch.client.opensearch._types.query_dsl.BoolQuery;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch.core.BulkRequest;
 import org.opensearch.client.opensearch.core.DeleteByQueryRequest;
-import org.opensearch.client.opensearch.core.IndexRequest;
 import org.opensearch.client.opensearch.core.SearchRequest;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkOperation;
+import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.util.ObjectBuilder;
 import org.springframework.stereotype.Service;
 import se.ifmo.common.placemark.Dto;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OpenSearchService {
     private final OpenSearchClient client;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -37,28 +35,67 @@ public class OpenSearchService {
         "coordinates"
     );
 
-    public <T extends Dto> void index(T dto, UUID documentId, Integer objectId) {
+    public <T extends Dto> void index(List<T> dtos, UUID documentId) {
+        if(dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        var documentsMap = collectDocuments(dtos, documentId);
         try {
-            IndexDocument doc = IndexDocument.of(documentId, objectId, objectMapper.valueToTree(dto));
-            IndexRequest<IndexDocument> req = IndexRequest.of(b -> b
-                .index(dto.getIndexName())
-                .id(doc.getId())
-                .document(doc)
-                .refresh(Refresh.WaitFor)
-            );
-            client.index(req);
+            List<BulkOperation> operations = new ArrayList<>();
 
-            if(dto instanceof NestedProvider np) {
-                for (var child: np.nested()){
-                    if(child != null) {
-                        index(child, documentId, objectId);
-                    }
+            documentsMap.forEach((index, documents) -> {
+                for(int i = 0; i < dtos.size(); i++) {
+                    IndexDocument doc = documents.get(i);
+                    operations.add(BulkOperation.of(b -> b
+                            .index(idx -> idx
+                                    .index(index)
+                                    .id(doc.getId())
+                                    .document(doc))
+                    ));
                 }
-            }
+            });
+
+            BulkRequest request = BulkRequest.of(b -> b
+                    .operations(operations)
+                    .refresh(Refresh.WaitFor)
+            );
+
+            client.bulk(request);
 
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            log.info(e.getMessage());
             throw new ImportException("Failed load dto to OpenSearch");
         }
+    }
+
+    private <T extends Dto> Map<String, List<IndexDocument>> collectDocuments(
+            List<T> dtos, UUID documentId
+    ) {
+        Map<String, List<IndexDocument>> result = new HashMap<>();
+        List<IndexDocument> docs = new ArrayList<>();
+
+        for(int i = 0; i < dtos.size(); i++) {
+            T dto = dtos.get(i);
+            IndexDocument doc = IndexDocument.of(documentId, i, objectMapper.valueToTree(dto));
+            docs.add(doc);
+        }
+
+        if(dtos.getFirst() instanceof NestedProvider np) {
+            for(int i = 0; i < np.nested().size(); i++) {
+                final int nestedIdx = i;
+                var childs = dtos.stream()
+                        .map(d -> {
+                            var n = ((NestedProvider) d).nested();
+                            return n.get(nestedIdx);
+                        })
+                        .toList();
+                result.putAll(collectDocuments(childs, documentId));
+            }
+        }
+
+        result.put(dtos.getFirst().getIndexName(), docs);
+        return result;
     }
 
     public void deleteByDocumentIdAndObjectId(UUID documentId, Integer objectId) {
@@ -69,17 +106,29 @@ public class OpenSearchService {
                         .query(q ->
                                 q.term(t -> t
                                 .field("id.keyword")
-                                .value(v -> v.stringValue(documentId.toString() + ":" + objectId.toString()))))
-                        .refresh(true));
+                                .value(v -> v.stringValue(documentId.toString() + ":" + objectId.toString())))));
                 try {
                     client.deleteByQuery(req);
                 } catch (IOException e) {
+                    System.out.println(e.getMessage());
                     throw new RuntimeException(e);
                 }
             });
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new IllegalArgumentException("Failed update dto in OpenSearch");
         }
+    }
+
+    public void refresh(){
+        indexesList.forEach(index -> {
+            try {
+                client.indices().refresh(r -> r.index(index));
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public void deleteByDocumentId(UUID documentId) {
@@ -96,10 +145,12 @@ public class OpenSearchService {
                     client.deleteByQuery(req);
                 }
                 catch (IOException e) {
+                    System.out.println(e.getMessage());
                     throw new RuntimeException(e);
                 }
             });
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new IllegalArgumentException("Failed delete dto in OpenSearch");
         }
     }
@@ -111,42 +162,49 @@ public class OpenSearchService {
         SearchRequest searchRequest = SearchRequest.of(s -> s
             .index(indexName)
             .query(buildQueryFunction(fieldAndValue))
+            .size(10000)
         );
         try {
             SearchResponse<IndexDocument> resp = client.search(searchRequest, IndexDocument.class);
-            List<IndexDocument> result = new ArrayList<>();
-            resp.hits().hits().forEach(hit -> {
-                IndexDocument src = hit.source();
-                if(src != null) {
-                    result.add(src);
-                }
-            });
-            return result;
+            return resp.hits().hits().stream()
+                    .map(Hit::source)
+                    .filter(Objects::nonNull)
+                    .toList();
 
         } catch (Exception e) {
             throw new ImportException("Failed search dto in OpenSearch");
         }
     }
 
-//    private <T extends Dto> List<IndexDocument<T>> extractPayloads(SearchResponse<IndexDocument> searchResponse, Class<T> dtoClass) {
-//        List<IndexDocument<T>> results = new ArrayList<>();
-//        searchResponse.hits().hits().forEach(hit -> {
-//            IndexDocument<?> doc = hit.source();
-//            if (doc != null && doc.getPayload() != null) {
-//                T payload = objectMapper.convertValue(doc.getPayload(), dtoClass);
-//                results.add(IndexDocument.of(doc.getDocumentId(), doc.getObjectId(), payload));
-//            }
-//        });
-//        return results;
-//    }
-
     private Function<Query.Builder, ObjectBuilder<Query>> buildQueryFunction(Map<String, String> fieldAndValue) {
-        List<Query> queries = new ArrayList<>();
-        fieldAndValue.forEach((field, value) -> {
-            Query termQuery = Query.of(q -> q.term(t -> t.field("payload." + field).value(v -> v.stringValue(value))));
-            queries.add(termQuery);
-        });
-        BoolQuery boolQuery = BoolQuery.of(b -> b.must(queries));
-        return q -> q.bool(boolQuery);
+        List<Query> queries = fieldAndValue.entrySet().stream()
+                .map(entry -> {
+                    String field = "payload." + entry.getKey();
+                    String value = entry.getValue();
+
+                    return Query.of(q -> q.term(t -> {
+                        t.field(field);
+                        if (isNumeric(value)) {
+                            return t.value(v -> v.longValue(Integer.parseInt(value)));
+                        } else {
+                            return t.field(field + ".keyword")
+                                    .value(v -> v.stringValue(value));
+                        }
+                    }));
+                })
+                .toList();
+        return q -> q.bool(b -> b.must(queries));
+    }
+
+    private boolean isNumeric(String str) {
+        if (str == null) {
+            return false;
+        }
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

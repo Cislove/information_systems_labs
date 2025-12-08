@@ -14,46 +14,48 @@ export const ToastContainer: React.FC = () => {
 
     return (
         <div className="toast-container fancy">
-            {toasts.map(t => {
-                const dto: any = t.dto;
-                const type = (dto.type || 'UPDATE').toUpperCase();
-                const meta = typeMeta[type] || typeMeta.UPDATE;
-                const resource = dto.entityType;
-                const id = Number(dto.entityId);
-                const mainMessage =
-                    dto.message ||
-                    [resource, id !== undefined ? `#${id}` : ''].filter(Boolean).join(' ');
-                return (
-                    <div
-                        key={t.id}
-                        className={`toast toast--large toast--${type.toLowerCase()}`}
-                        style={{ ['--toast-color' as any]: meta.color, ['--toast-accent' as any]: meta.accent }}
-                    >
-                        <div className="toast-bar" />
-                        <div className="toast-header">
-                            <span className="toast-icon">{meta.icon}</span>
-                            <span className="toast-title">
-                                {type} {resource && `• ${resource}`}
-                            </span>
-                            <button
-                                className="toast-close"
-                                aria-label="Закрыть"
-                                onClick={() => remove(t.id)}
-                            >
-                                ×
-                            </button>
+            {toasts
+                .filter(t => !t.dto.allIds) // allIds-уведомления не отображаем как тосты
+                .map(t => {
+                    const dto: any = t.dto;
+                    const type = (dto.type || 'UPDATE').toUpperCase();
+                    const meta = typeMeta[type] || typeMeta.UPDATE;
+                    const resource = dto.entityType;
+                    const id = dto.entityId; // оставляем как есть (строка)
+                    const mainMessage =
+                        dto.message ||
+                        [resource, id ? `#${id}` : ''].filter(Boolean).join(' ');
+                    return (
+                        <div
+                            key={t.id}
+                            className={`toast toast--large toast--${type.toLowerCase()}`}
+                            style={{ ['--toast-color' as any]: meta.color, ['--toast-accent' as any]: meta.accent }}
+                        >
+                            <div className="toast-bar" />
+                            <div className="toast-header">
+                                <span className="toast-icon">{meta.icon}</span>
+                                <span className="toast-title">
+                                    {type} {resource && `• ${resource}`}
+                                </span>
+                                <button
+                                    className="toast-close"
+                                    aria-label="Закрыть"
+                                    onClick={() => remove(t.id)}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="toast-body">
+                                <p className="toast-message">{mainMessage}</p>
+                                <ul className="toast-details">
+                                    {resource && <li>Ресурс: {resource}</li>}
+                                    {id && <li>ID: {id}</li>}
+                                    <li>Тип: {type}</li>
+                                </ul>
+                            </div>
                         </div>
-                        <div className="toast-body">
-                            <p className="toast-message">{mainMessage}</p>
-                            <ul className="toast-details">
-                                {resource && <li>Ресурс: {resource}</li>}
-                                {id !== undefined && <li>ID: {id}</li>}
-                                <li>Тип: {type}</li>
-                            </ul>
-                        </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
         </div>
     );
 };

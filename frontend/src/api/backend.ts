@@ -19,6 +19,8 @@ import type {
   CoordinatesGetAllParams,
   CoordinatesGetSearchFields200,
   CoordinatesSearchParams,
+  ImporthistoryGetImportHistory200,
+  ImporthistoryGetImportHistoryParams,
   LocationDto,
   LocationGetAllParams,
   LocationGetSearchFields200,
@@ -284,6 +286,14 @@ const productoperationsReducePrice = <TData = AxiosResponse<void>>(
     return axios.post(
       `http://localhost:8080/api/v1/product/price/reduce`,
       priceReduceDto,options
+    );
+  }
+
+const importUploadFile = <TData = AxiosResponse<void>>(
+     options?: AxiosRequestConfig
+ ): Promise<TData> => {
+    return axios.post(
+      `http://localhost:8080/api/import/upload`,undefined,options
     );
   }
 
@@ -587,7 +597,17 @@ const addressGetSearchFields = <TData = AxiosResponse<AddressGetSearchFields200>
     );
   }
 
-return {productGetAll,productUpdate,productCreate,personGetAll,personUpdate,personCreate,organizationGetAll,organizationUpdate,organizationCreate,locationGetAll,locationUpdate,locationCreate,coordinatesGetAll,coordinatesUpdate,coordinatesCreate,addressGetAll,addressUpdate,addressCreate,productoperationsGetUnitOfMeasureProductWhereUnitOfMeasureIsSet,productoperationsReducePrice,productGetById,productDelete,productSearch,productGetSearchFields,productoperationsGetRatingSum,productoperationsGetRatingCountOfProductWhereRatingGreaterThat,productoperationsGetRatingCountOfGroups,personGetById,personDelete,personSearch,personGetSearchFields,organizationGetById,organizationDelete,organizationSearch,organizationGetSearchFields,locationGetById,locationDelete,locationSearch,locationGetSearchFields,coordinatesGetById,coordinatesDelete,coordinatesSearch,coordinatesGetSearchFields,addressGetById,addressDelete,addressSearch,addressGetSearchFields}};
+const importhistoryGetImportHistory = <TData = AxiosResponse<ImporthistoryGetImportHistory200>>(
+    params: ImporthistoryGetImportHistoryParams, options?: AxiosRequestConfig
+ ): Promise<TData> => {
+    return axios.get(
+      `http://localhost:8080/api/import/history`,{
+    ...options,
+        params: {...params, ...options?.params},}
+    );
+  }
+
+return {productGetAll,productUpdate,productCreate,personGetAll,personUpdate,personCreate,organizationGetAll,organizationUpdate,organizationCreate,locationGetAll,locationUpdate,locationCreate,coordinatesGetAll,coordinatesUpdate,coordinatesCreate,addressGetAll,addressUpdate,addressCreate,productoperationsGetUnitOfMeasureProductWhereUnitOfMeasureIsSet,productoperationsReducePrice,importUploadFile,productGetById,productDelete,productSearch,productGetSearchFields,productoperationsGetRatingSum,productoperationsGetRatingCountOfProductWhereRatingGreaterThat,productoperationsGetRatingCountOfGroups,personGetById,personDelete,personSearch,personGetSearchFields,organizationGetById,organizationDelete,organizationSearch,organizationGetSearchFields,locationGetById,locationDelete,locationSearch,locationGetSearchFields,coordinatesGetById,coordinatesDelete,coordinatesSearch,coordinatesGetSearchFields,addressGetById,addressDelete,addressSearch,addressGetSearchFields,importhistoryGetImportHistory}};
 export type ProductGetAllResult = AxiosResponse<PageDtoProductDto>
 export type ProductUpdateResult = AxiosResponse<void>
 export type ProductCreateResult = AxiosResponse<number>
@@ -608,6 +628,7 @@ export type AddressUpdateResult = AxiosResponse<void>
 export type AddressCreateResult = AxiosResponse<number>
 export type ProductoperationsGetUnitOfMeasureProductWhereUnitOfMeasureIsSetResult = AxiosResponse<ProductDto[]>
 export type ProductoperationsReducePriceResult = AxiosResponse<void>
+export type ImportUploadFileResult = AxiosResponse<void>
 export type ProductGetByIdResult = AxiosResponse<ProductDto>
 export type ProductDeleteResult = AxiosResponse<void>
 export type ProductSearchResult = AxiosResponse<PageDtoProductDto>
@@ -635,3 +656,4 @@ export type AddressGetByIdResult = AxiosResponse<AddressDto>
 export type AddressDeleteResult = AxiosResponse<void>
 export type AddressSearchResult = AxiosResponse<PageDtoAddressDto>
 export type AddressGetSearchFieldsResult = AxiosResponse<AddressGetSearchFields200>
+export type ImporthistoryGetImportHistoryResult = AxiosResponse<ImporthistoryGetImportHistory200>

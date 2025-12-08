@@ -52,4 +52,6 @@ public class OrganizationService extends AbstractCrudService<
     protected Class<OrganizationDto> getDtoClass() {
         return OrganizationDto.class;
     }
+
 }
+

@@ -8,6 +8,12 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: myuser
     password: mypassword
+    hikari:
+      maximum-pool-size: 50          # Было 10 (по умолчанию)
+      minimum-idle: 10               # Минимум простаивающих соединений
+      connection-timeout: 30000      # 30 секунд на получение соединения
+      idle-timeout: 600000           # 10 минут до закрытия простаивающего
+      max-lifetime: 1800000
   jpa:
 #    show-sql: true
     hibernate:
@@ -24,19 +30,15 @@ spring:
       javax:
         cache:
           provider: org.ehcache.jsr107.EhcacheCachingProvider
-logging:
-  level:
-    org:
-#      hibernate:
-#        SQL: DEBUG
-#        type:
-#          descriptor:
-#            sql:
-#              BasicBinder: TRACE
-      apache:
-        http:
-          wire: DEBUG
-      opensearch: DEBUG
+#logging:
+#  level:
+#    org:
+##      hibernate:
+##        SQL: DEBUG
+##        type:
+##          descriptor:
+##            sql:
+##              BasicBinder: TRACE
 
 springdoc:
   operation-id-template: "{className}_{methodName}"

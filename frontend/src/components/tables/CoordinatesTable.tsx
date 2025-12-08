@@ -5,9 +5,9 @@ import * as api from "../../api/backend";
 import { CoordinatesForm } from "../forms/CoordinateForm";
 import { errorText } from "../../api/error";
 
-export function CoordinatesTable() {
+export function CoordinatesTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<CoordinatesDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: (item: CoordinatesDto) => item.id || "ОБРАБАТЫВАЕТСЯ"},
         { title: "X", key: "x" },
         { title: "Y", key: "y" },
     ];
@@ -59,6 +59,8 @@ export function CoordinatesTable() {
             api={apiAdapter}
             FormComponent={CoordinatesForm}
             resourceKey={"coordinates"}
+            uploadEnabled={true}
+            onDataChanged={onDataChanged}
         />
     );
 }

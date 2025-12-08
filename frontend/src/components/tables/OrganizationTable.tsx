@@ -11,14 +11,14 @@ import { organizationFields, OrganizationForm } from "../forms/OrganizationForm"
 import { personFields } from "../forms/PersonForm";
 import { errorText } from "../../api/error";
 
-export function OrganizationTable() {
+export function OrganizationTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<OrganizationDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: (item: OrganizationDto) => item.id || "ОБРАБАТЫВАЕТСЯ" },
         { title: "Название", key: "name" },
         {
             title: "ID адреса",
             key: "id" as any,
-            render: (item: OrganizationDto) => item.officialAddress?.id || "-",
+            render: (item: OrganizationDto) => item.officialAddress?.id || "ОБРАБАТЫВАЕТСЯ",
         },
         { title: "Годовой оборот", key: "annualTurnover" },
         { title: "Число сотрудников", key: "employeesCount" },
@@ -99,6 +99,8 @@ export function OrganizationTable() {
             FormComponent={OrganizationForm}
             filterFields={filterFields}
             resourceKey={"organization"}
+            uploadEnabled={true}
+            onDataChanged={onDataChanged}
         />
     );
 }

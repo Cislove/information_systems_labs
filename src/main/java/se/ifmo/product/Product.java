@@ -51,7 +51,7 @@ public class Product implements AbstractEntity<Integer> {
 
     private int manufactureCost;
 
-    @Check(constraints = "price is null or price > 0")
+    @Check(constraints = "rating is null or rating > 0")
     private Float rating; //Поле может быть null, Значение поля должно быть больше 0
 
     @Column(nullable = false)

@@ -28,4 +28,6 @@ public interface AbstractRepository<TEntity, TId>{
     void deleteById(TId id);
 
     boolean existsById(TId id);
+
+    long count();
 }

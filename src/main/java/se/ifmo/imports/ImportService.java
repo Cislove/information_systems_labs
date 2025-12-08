@@ -6,15 +6,23 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 import se.ifmo.history.ImportHistory;
 import se.ifmo.history.ImportHistoryService;
 import se.ifmo.imports.parser.FileParser;
+import se.ifmo.notification.NotificationService;
+import se.ifmo.organization.Organization;
+import se.ifmo.organization.OrganizationService;
 import se.ifmo.product.ProductDto;
+import se.ifmo.product.ProductMapper;
 import se.ifmo.product.ProductService;
 
 import java.io.IOException;
@@ -35,11 +43,15 @@ public class ImportService {
     private final ImportHistoryService importHistoryService;
     private final OpenSearchService openSearchService;
     private final List<FileParser> parsers;
+    private final NotificationService notificationService;
+    private final ProductMapper productMapper;
+    private final OrganizationService organizationService;
+    private final PlatformTransactionManager txManager;
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = IllegalArgumentException.class)
+//    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = IllegalArgumentException.class)
     public void importFile(MultipartFile file){
         int importHistoryId = importHistoryService.addImport(file.getOriginalFilename()).getId();
 
@@ -49,77 +61,58 @@ public class ImportService {
                 return;
             }
         }
-        importHistoryService.makeImportFailed(importHistoryId);
         throw new ImportException("File not supported");
     }
 
     private void executeParsing(FileParser parser, MultipartFile file, int importHistoryId){
-        String fileName = file.getOriginalFilename();
-        String type = file.getContentType();
+        UUID documentId = UUID.randomUUID();
 
-        if(parser.supportsFormat(fileName, type)){
-            UUID documentId = UUID.randomUUID();
-            final int[] objectId = {0};
-            List<ProductDto> dtosForDb = new ArrayList<>();
-            List<Future<Void>> indexingTasks = new ArrayList<>();
-
-            try{
-                var inputStream = parser.parse(file.getInputStream());
-                inputStream.forEach(productDto -> executeDto(objectId, documentId, productDto, dtosForDb, indexingTasks));
-            }
-            catch (IOException e){
-                openSearchService.deleteByDocumentId(documentId);
-                throw new IllegalArgumentException("Failed to read file");
-            }
-
-            executor.submit(() -> {
-                try {
-                    postParseTask(indexingTasks, documentId, dtosForDb);
-                    importHistoryService.makeImportCompleted(importHistoryId, dtosForDb.size());
-                    return null;
-                }
-                catch (Exception e){
-                    openSearchService.deleteByDocumentId(documentId);
-                    importHistoryService.makeImportFailed(importHistoryId);
-                    throw e;
+        try{
+            var input = parser.parse(file.getInputStream()).toList();
+            input.forEach(product -> {
+                if(product.coordinates().y() <= -718){
+                    throw new IllegalArgumentException("Invalid coordinates: Y must be greater than -718");
                 }
             });
+
+            openSearchService.index(input, documentId);
+            notificationService.sendAddNotification(null, null, true);
+
+            executor.submit(() -> {
+                DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+                def.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+                def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+                TransactionStatus status = txManager.getTransaction(def);
+                try {
+                    postParseTask(documentId, input);
+                    importHistoryService.makeImportCompleted(importHistoryId, input.size());
+                    txManager.commit(status);
+                } catch (Exception e) {
+                    openSearchService.refresh();
+                    txManager.rollback(status);
+                    importHistoryService.makeImportFailed(importHistoryId);
+                    openSearchService.deleteByDocumentId(documentId);
+                    System.out.println("import failed");
+                }
+                notificationService.sendAddNotification(null, null, true);
+            });
+        }
+        catch (Exception e){
+            openSearchService.deleteByDocumentId(documentId);
+            importHistoryService.makeImportFailed(importHistoryId);
+            notificationService.sendAddNotification(null, null, true);
+            throw new IllegalArgumentException("Failed to read file");
         }
     }
 
-    private void postParseTask(List<Future<Void>> indexingTasks, UUID documentId, List<ProductDto> dtosForDb){
-        waitIndexing(indexingTasks);
+    private void postParseTask(UUID documentId, List<ProductDto> dtosForDb) throws InterruptedException {
         scheduleCleanup(documentId, Duration.ofMinutes(10));
         final int[] counter = {0};
-        dtosForDb.forEach(productDto -> {
-            productService.create(productDto);
+        Thread.sleep(Duration.ofSeconds(20));
+        for(ProductDto productDto : dtosForDb){
+            productService.save(productMapper.toEntity(productDto));
             openSearchService.deleteByDocumentIdAndObjectId(documentId, counter[0]++);
-        });
-    }
-
-    private void waitIndexing(List<Future<Void>> tasks){
-        tasks.forEach(task -> {
-            try {
-                task.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new ImportException("Import interrupted");
-            }
-        });
-    }
-
-    private void executeDto(
-        final int[] objectId,
-        UUID documentId,
-        ProductDto dto,
-        List<ProductDto> dtosForDb,
-        List<Future<Void>> indexingTasks){
-
-        int currentObjectId = objectId[0]++;
-        dtosForDb.add(dto);
-        indexingTasks.add(executor.submit(() -> {
-            openSearchService.index(dto, documentId, currentObjectId);
-            return null;
-        }));
+        }
     }
 
     private void scheduleCleanup(UUID documentId, Duration delay){

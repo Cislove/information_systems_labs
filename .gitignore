@@ -4,5 +4,5 @@ target/
 !**/src/test/**/target/
 
 .idea/
-./frontend/node_modules/
-./frontend/src/api/
+frontend/node_modules
+frontend/src/api/

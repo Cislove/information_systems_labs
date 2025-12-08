@@ -23,21 +23,8 @@ public class OpenSearchConfig {
 
     @Bean
     public OpenSearchClient openSearchClient() {
-
-        HttpRequestInterceptor loggingInterceptor = new HttpRequestInterceptor() {
-            @Override
-            public void process(HttpRequest request, HttpContext context)
-                    throws HttpException, IOException {
-                log.debug("OpenSearch request: method={}, uri={}",
-                        request.getRequestLine().getMethod(),
-                        request.getRequestLine().getUri());
-            }
-        };
-
         RestClient restClient = RestClient.builder(
                         new org.apache.http.HttpHost("localhost", 9200, "http"))
-                .setHttpClientConfigCallback((HttpAsyncClientBuilder httpClientBuilder) ->
-                        httpClientBuilder.addInterceptorLast(loggingInterceptor))
                 .build();
 
         RestClientTransport transport =

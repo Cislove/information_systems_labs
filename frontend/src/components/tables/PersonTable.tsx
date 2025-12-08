@@ -12,16 +12,16 @@ import { OrganizationForm } from "../forms/OrganizationForm";
 import { personFields, PersonForm } from "../forms/PersonForm";
 import { errorText } from "../../api/error";
 
-export function PersonTable() {
+export function PersonTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<PersonDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: (item: PersonDto) => item.id || "ОБРАБАТЫВАЕТСЯ" },
         { title: "Имя", key: "name" },
         { title: "Цвет глаз", key: "eyeColor" },
         { title: "Цвет волос", key: "hairColor" },
         {
             title: "ID местоположения",
             key: "id" as any,
-            render: (item: PersonDto) => item.location?.id || "-",
+            render: (item: PersonDto) => item.location?.id || "ОБРАБАТЫВАЕТСЯ",
         },
         { title: "День рождения", key: "birthday" },
         { title: "Национальность", key: "nationality" },
@@ -95,6 +95,8 @@ export function PersonTable() {
             FormComponent={PersonForm}
             filterFields={filterFields}
             resourceKey={"person"}
+            uploadEnabled={true}
+            onDataChanged={onDataChanged}
         />
     );
 }

@@ -6,9 +6,9 @@ import { CoordinatesForm } from "../forms/CoordinateForm";
 import { LocationForm } from "../forms/LocationForm";
 import { errorText } from "../../api/error";
 
-export function LocationTable() {
+export function LocationTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<LocationDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: (item: LocationDto) => item.id || "ОБРАБАТЫВАЕТСЯ"},
         { title: "X", key: "x" },
         { title: "Y", key: "y" },
         { title: "Z", key: "z" },
@@ -69,6 +69,8 @@ export function LocationTable() {
             api={apiAdapter}
             FormComponent={LocationForm}
             resourceKey={"location"}
+            uploadEnabled={true}
+            onDataChanged={onDataChanged}
         />
     );
 }

@@ -22,7 +22,6 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-@Slf4j
 public class CoordinatesRepository implements AbstractRepository<Coordinates, Integer>{
     private final static String TOTAL_SIZE_QUERY = "SELECT COUNT(cord.id) FROM Coordinates cord";
     private final EntityManager entityManager;
@@ -30,7 +29,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
     @Transactional(readOnly = true)
     @Override
     public Optional<Coordinates> findById(Integer id){
-        log.info("Find Coordinates by id: {}", id);
         Session session = entityManager.unwrap(Session.class);
         Coordinates res = session.get(Coordinates.class, id);
         return Optional.ofNullable(res);
@@ -39,7 +37,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
     @Transactional(readOnly = true)
     @Override
     public Page<Coordinates> findAll(Pageable pageable){
-        log.info("Find all Coordinates pageable: {}", pageable);
         Session session = entityManager.unwrap(Session.class);
         List<Coordinates> results = session.createQuery(
                 "FROM Coordinates cord ORDER BY cord.id", Coordinates.class)
@@ -55,7 +52,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
     @Override
     @Transactional(readOnly = true)
     public Page<Coordinates> findAll(Specification<Coordinates> spec, Pageable pageable) {
-        log.info("Find all Coordinates pageable: {}", pageable);
         Session session = entityManager.unwrap(Session.class);
         CriteriaBuilder cb = session.getCriteriaBuilder();
         CriteriaQuery<Coordinates> query = cb.createQuery(Coordinates.class);
@@ -76,7 +72,6 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
 
     @Transactional
     public Coordinates save(Coordinates coordinates){
-        log.info("Save Coordinates: {}", coordinates);
         Session session = entityManager.unwrap(Session.class);
         if(coordinates.getId() == null){
             session.persist(coordinates);
@@ -87,13 +82,18 @@ public class CoordinatesRepository implements AbstractRepository<Coordinates, In
 
     @Transactional
     public void deleteById(Integer id){
-        log.info("Delete Coordinates by id: {}", id);
         Session session = entityManager.unwrap(Session.class);
         session.remove(session.get(Coordinates.class, id));
     }
 
     public boolean existsById(Integer id){
-        log.info("Exists Coordinates by id: {}", id);
         return findById(id).isPresent();
+    }
+
+    @Override
+    public long count() {
+        Session session = entityManager.unwrap(Session.class);
+        Long count = session.createQuery(TOTAL_SIZE_QUERY, Long.class).getSingleResult();
+        return count;
     }
 }

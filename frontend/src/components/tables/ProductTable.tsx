@@ -6,21 +6,21 @@ import { productFields, ProductForm } from "../forms/ProductForm";
 import { useState } from "react";
 import { errorText } from "../../api/error";
 
-export function ProductTable() {
+export function ProductTable({ onDataChanged }: { onDataChanged?: () => void }) {
     const columns: Column<ProductDto>[] = [
-        { title: "ID", key: "id" },
+        { title: "ID", key: "id", render: item => item.id || "ОБРАБАТЫВАЕТСЯ" },
         { title: "Имя", key: "name" },
         {
             title: "ID координат",
             key: "id" as any,
-            render: (item: ProductDto) => item.coordinates?.id || "-"
+            render: (item: ProductDto) => item.coordinates?.id || "ОБРАБАТЫВАЕТСЯ"
         },
         { title: "Дата создания", key: "creationDate" },
         { title: "Единица измерения", key: "unitOfMeasure" },
         {
             title: "ID предприятия",
             key: "id" as any,
-            render: (item: ProductDto) => item.manufacturer?.id || "-"
+            render: (item: ProductDto) => item.manufacturer?.id || "ОБРАБАТЫВАЕТСЯ"
         },
         { title: "Стоимость", key: "price" },
         { title: "Стоимость производства", key: "manufactureCost" },
@@ -29,7 +29,7 @@ export function ProductTable() {
         {
             title: "ID владельца",
             key: "id" as any,
-            render: (item: ProductDto) => item.owner?.id || "-"
+            render: (item: ProductDto) => item.owner?.id || "ОБРАБАТЫВАЕТСЯ"
         }
     ];
 
@@ -207,6 +207,8 @@ export function ProductTable() {
                 FormComponent={ProductForm}
                 filterFields={filterFields}
                 resourceKey={"product"}
+                uploadEnabled={true}
+                onDataChanged={onDataChanged}
             />
         </div>
     );

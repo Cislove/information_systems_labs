@@ -429,6 +429,14 @@ paths:
       responses:
         "200":
           description: OK
+  /api/import/upload:
+    post:
+      tags:
+      - import-controller
+      operationId: importUploadFile
+      responses:
+        "200":
+          description: OK
   /api/v1/product/{id}:
     get:
       tags:
@@ -1005,6 +1013,45 @@ paths:
                 type: object
                 additionalProperties:
                   type: string
+  /api/import/history:
+    get:
+      tags:
+      - import-history-controller
+      operationId: importhistoryGetImportHistory
+      parameters:
+      - name: pageNumber
+        in: query
+        description: Номер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        description: Размер страницы
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      - name: limit
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    $ref: "#/components/schemas/ImportHistoryDto"
+                - $ref: "#/components/schemas/PageDtoImportHistoryDto"
 components:
   schemas:
     AddressDto:
@@ -1034,7 +1081,7 @@ components:
           format: double
         "y":
           type: number
-          format: double
+          format: float
       required:
       - id
     LocationDto:
@@ -1256,6 +1303,42 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AddressDto"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalSize:
+          type: integer
+          format: int64
+    ImportHistoryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        importTime:
+          type: string
+          format: date-time
+        fileName:
+          type: string
+        status:
+          type: string
+          enum:
+          - IN_PROGRESS
+          - COMPLETED
+          - FAILED
+        addedNumberOfObjects:
+          type: integer
+          format: int32
+    PageDtoImportHistoryDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImportHistoryDto"
         pageNumber:
           type: integer
           format: int32

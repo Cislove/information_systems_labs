@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.antlr.v4.runtime.tree.xpath.XPath.findAll;
+
 @Service
 @RequiredArgsConstructor
 public class ProductOperationsService {
@@ -36,9 +38,9 @@ public class ProductOperationsService {
                 .mapToDouble(Product::getRating).sum();
     }
 
-    public long countOfProductsWhereRatingGreaterThan(double rating){
-        return productRepository.findAll()
-                .stream()
+    public long countOfProductsWhereRatingGreaterThan(float rating){
+        List<Product> products = productRepository.findAll();
+        return products.stream()
                 .filter(product -> product.getRating() > rating)
                 .count();
     }
